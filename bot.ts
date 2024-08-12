@@ -9,10 +9,6 @@ if (!TELEGRAM_TOKEN) {
 
 const bot = new Bot(TELEGRAM_TOKEN);
 
-bot.command('start', (ctx) => ctx.reply('Welcome! Up and running.'));
-bot.on('message', (ctx) => {
-  console.log(ctx.message);
-  ctx.reply('Got another message!');
-});
+bot.catch((error) => console.error(error));
 
 bot.start();

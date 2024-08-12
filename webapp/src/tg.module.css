@@ -1,0 +1,16 @@
+:root {
+  --mantine-color-body: var(--tg-theme-bg-color) !important;
+  --mantine-color-text: var(--tg-theme-text-color) !important;
+  --mantine-color-anchor: var(--tg-theme-link-color) !important;
+  --mantine-color-default: var(--tg-theme-bg-color) !important;
+  --mantine-primary-color-filled: var(--tg-theme-button-color) !important;
+  --mantine-primary-color-filled-hover: var(--tg-theme-button-color) !important;
+  --mantine-color-dimmed: var(--tg-theme-subtitle-text-color) !important;
+  --mantine-color-default-border: var(
+    --tg-theme-section-separator-color
+  ) !important;
+}
+
+button {
+  --button-color: var(--tg-theme-button-text-color) !important;
+}
