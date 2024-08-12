@@ -16,8 +16,7 @@ bot.command('orders', async (ctx) => {
   ctx.reply(
     orders
       .map((order: any) => {
-        console.log(JSON.stringify(order, null, 2));
-        return JSON.stringify(order, null, 2).replace(
+        return JSON.stringify(order, null, 4).replace(
           /[, \n]*"image.*"[\n ]*/g,
           ''
         );
