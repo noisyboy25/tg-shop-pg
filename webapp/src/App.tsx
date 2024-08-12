@@ -8,8 +8,6 @@ import {
   Card,
   Center,
   Image,
-  List,
-  ListItem,
   Loader,
   MantineProvider,
   NumberFormatter,
@@ -32,7 +30,6 @@ function App() {
   const nextStep = () =>
     setActive((current) => (current < 3 ? current + 1 : current));
 
-  const [orders, setOrders] = useState<{ id: number; cart: Cart }[]>([]);
   const [cart, setCart] = useState<Cart>({});
 
   const [cost, setCost] = useState(0);
@@ -66,9 +63,6 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ order: { cart } }),
     });
-    const res = await fetch('/api/orders');
-    const data = await res.json();
-    setOrders(data.orders);
     setCart({});
     setOrderLoading(false);
   };
@@ -170,24 +164,14 @@ function App() {
               ) : (
                 <Alert
                   title={'Thank you!'}
-                  styles={{ message: { color: 'var(--tg-theme-text-color)' } }}
+                  styles={{
+                    message: { color: 'var(--tg-theme-text-color)' },
+                  }}
                   icon={<IconHeart />}
                 >
-                  Order created successfully
+                  Your order has been created successfully
                 </Alert>
               )}
-              <List withPadding>
-                {orders.map((order) => (
-                  <ListItem key={order.id}>
-                    {JSON.stringify(
-                      Object.values(order.cart).map(
-                        (item) => `${item.product.id} x ${item.quantity}`
-                      )
-                    )}{' '}
-                    ${calculateCost(order.cart)}
-                  </ListItem>
-                ))}
-              </List>
             </Stack>
           </Stepper.Completed>
         </Stepper>
