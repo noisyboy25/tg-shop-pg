@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Bot } from 'grammy';
+import { Bot, InlineKeyboard } from 'grammy';
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 if (!TELEGRAM_TOKEN) {
@@ -8,6 +8,16 @@ if (!TELEGRAM_TOKEN) {
 }
 
 const bot = new Bot(TELEGRAM_TOKEN);
+
+bot.command('start', async (ctx) => {
+  const botUsername = (await ctx.api.getMe()).username;
+  ctx.reply('Open App', {
+    reply_markup: new InlineKeyboard().url(
+      'Open App',
+      `https://t.me/${botUsername}?startapp`
+    ),
+  });
+});
 
 bot.command('orders', async (ctx) => {
   const res = await fetch(`${process.env.SHOP_URL}/api/orders`);

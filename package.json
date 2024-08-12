@@ -1,24 +1,13 @@
 {
-  "name": "alesha-shop-tg",
+  "name": "tg-shop-pg",
   "version": "1.0.0",
   "description": "",
-  "main": "bot.ts",
-  "scripts": {
-    "start": "ts-node bot.ts",
-    "dev": "nodemon bot.ts"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.2.0",
-    "nodemon": "^3.1.4",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
-  },
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "grammy": "^1.28.0"
+  "scripts": {
+    "webapp": "pnpm --filter webapp",
+    "api": "pnpm --filter api",
+    "bot": "pnpm --filter bot"
   }
 }

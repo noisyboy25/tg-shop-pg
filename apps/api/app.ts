@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import { Cart } from './types';
 
+const IMAGE_API = process.env.IMAGE_API;
+
 const app = express();
 app.use(express.json());
 
@@ -15,14 +17,13 @@ api.get('/', (req, res) => {
 const products = express.Router();
 api.use('/products', products);
 
-const getImage = async () => {
+const getImages = async (limit = 15) => {
   const res = await fetch(
-    'https://api.waifu.im/search?included_tags=raiden-shogun&is_nsfw=false'
+    `${IMAGE_API}/images/random?rating=safe&limit=${limit}`
   );
-  const { images } = await res.json();
-  const image = images[0];
-  console.log(image);
-  return image;
+  const data = await res.json();
+  console.dir(data);
+  return data.items;
 };
 
 const productList: {
@@ -32,15 +33,15 @@ const productList: {
   image: string;
 }[] = [];
 const generateProducts = async () => {
-  for (let i = 0; i < Math.floor(5 + Math.random() * 25); i++) {
-    const image = await getImage();
+  const images = await getImages();
+  images.map((image: any) => {
     productList.push({
-      id: String(image.image_id),
+      id: String(image.id),
       name: image.tags[0].name,
-      price: image.image_id * 1234,
-      image: image.url,
+      price: Math.floor(Math.random() * 1000),
+      image: image.sample_url,
     });
-  }
+  });
 };
 generateProducts();
 
@@ -60,7 +61,7 @@ api
   .post((req, res) => {
     const { order } = req.body;
     order.id = orders.length;
-    console.dir(order);
+    console.dir(order, { depth: null });
     orders.push(order);
     res.json({ message: 'created order', order });
   });
