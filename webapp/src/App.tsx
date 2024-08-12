@@ -3,7 +3,6 @@ import { WebApp } from '@grammyjs/web-app';
 import '@mantine/core/styles.css';
 import './tg.module.css';
 import {
-  AppShell,
   Button,
   Card,
   Center,
@@ -12,6 +11,7 @@ import {
   MantineProvider,
   NumberFormatter,
   rem,
+  ScrollArea,
   SimpleGrid,
   Stack,
   Stepper,
@@ -42,38 +42,40 @@ function App() {
 
   return (
     <MantineProvider>
-      <AppShell withBorder={false}>
-        <AppShell.Main>
-          <Stepper
-            active={active}
-            onStepClick={setActive}
-            size="sm"
-            styles={{
-              steps: {
-                paddingLeft: rem(10),
-                paddingRight: rem(10),
-              },
-            }}
-          >
-            <Stepper.Step label={'Catalogue'} description={'Choose goods'}>
-              <Stack pl={'sm'} pr={'sm'}>
-                <Button onClick={() => nextStep()}>
-                  <div>
-                    Continue{' '}
-                    <NumberFormatter
-                      prefix={'$'}
-                      value={cost}
-                      thousandSeparator
-                    />
-                  </div>
-                </Button>
-              </Stack>
+      <Stack h={'100%'} justify={'space-between'}>
+        <Stepper
+          active={active}
+          onStepClick={setActive}
+          size="sm"
+          styles={{
+            root: { height: 'auto' },
+            steps: {
+              paddingLeft: rem(10),
+              paddingRight: rem(10),
+              paddingTop: rem(20),
+            },
+          }}
+        >
+          <Stepper.Step label={'Catalogue'} description={'Choose goods'}>
+            <Stack pl={'sm'} pr={'sm'}>
+              <Button onClick={() => nextStep()}>
+                <div>
+                  Continue{' '}
+                  <NumberFormatter
+                    prefix={'$'}
+                    value={cost}
+                    thousandSeparator
+                  />
+                </div>
+              </Button>
+            </Stack>
+            <ScrollArea>
               <SimpleGrid
                 mt={'md'}
                 p={'sm'}
                 cols={3}
                 style={{
-                  backgroundColor: WebApp.themeParams.secondary_bg_color,
+                  backgroundColor: 'var(--tg-theme-secondary-bg-color)',
                 }}
               >
                 {products.map((product) => (
@@ -107,11 +109,13 @@ function App() {
                   </Card>
                 ))}
               </SimpleGrid>
-            </Stepper.Step>
-            <Stepper.Step label={'Order'} description={'Select payment method'}>
+            </ScrollArea>
+          </Stepper.Step>
+          <Stepper.Step label={'Order'} description={'Select payment method'}>
+            <Stack pl={'sm'} pr={'sm'}>
               <Button onClick={() => nextStep()}>
                 <div>
-                  Confirm{' '}
+                  Pay{' '}
                   <NumberFormatter
                     prefix={'$'}
                     value={cost}
@@ -119,20 +123,20 @@ function App() {
                   />
                 </div>
               </Button>
-            </Stepper.Step>
-            <Stepper.Completed>
+            </Stack>
+          </Stepper.Step>
+          <Stepper.Completed>
+            <Stack pl={'sm'} pr={'sm'}>
               <Button>
                 <Loader color={'rgba(194, 232, 255, 0.48)'} size={'sm'} />
               </Button>
-            </Stepper.Completed>
-          </Stepper>
-        </AppShell.Main>
-        <AppShell.Footer>
-          <Center bg={'var(--tg-theme-bg-color)'}>
-            <Text c={'dimmed'}>API v{WebApp.version}</Text>
-          </Center>
-        </AppShell.Footer>
-      </AppShell>
+            </Stack>
+          </Stepper.Completed>
+        </Stepper>
+        <Center bg={'var(--tg-theme-bg-color)'}>
+          <Text c={'dimmed'}>API v{WebApp.version}</Text>
+        </Center>
+      </Stack>
     </MantineProvider>
   );
 }

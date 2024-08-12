@@ -30,7 +30,7 @@ const productList: {
   image: string;
 }[] = [];
 const generateProducts = async () => {
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < Math.floor(5 + Math.random() * 25); i++) {
     const image = await getImage();
     productList.push({
       id: String(image.image_id),
