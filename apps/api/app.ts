@@ -14,8 +14,8 @@ api.get('/', (req, res) => {
   res.json({ message: `Hello from API (${Date.now()})` });
 });
 
-const products = express.Router();
-api.use('/products', products);
+const productApi = express.Router();
+api.use('/products', productApi);
 
 const getImages = async (limit = 15) => {
   const res = await fetch(
@@ -34,18 +34,21 @@ const productList: {
 }[] = [];
 const generateProducts = async () => {
   const images = await getImages();
-  images.map((image: any) => {
-    productList.push({
-      id: String(image.id),
-      name: image.tags[0].name,
-      price: Math.floor(Math.random() * 1000),
-      image: image.sample_url,
+  images
+    .filter((image: any) => image.tags.length > 0)
+    .map((image: any) => {
+      const tagIndex = Math.floor(Math.random() * image.tags.length);
+      productList.push({
+        id: String(image.id),
+        name: image.tags[tagIndex].name,
+        price: Math.floor(Math.random() * 1000),
+        image: image.sample_url,
+      });
     });
-  });
 };
 generateProducts();
 
-products.get('/', (req, res) => {
+productApi.get('/', (req, res) => {
   res.json({
     products: productList,
   });
