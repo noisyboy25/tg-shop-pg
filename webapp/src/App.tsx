@@ -3,6 +3,7 @@ import { WebApp } from '@grammyjs/web-app';
 import '@mantine/core/styles.css';
 import './tg.module.css';
 import {
+  Alert,
   Button,
   Card,
   Center,
@@ -22,6 +23,7 @@ import {
 import OrderStep from './OrderStep';
 import { calculateCost } from './util';
 import { Cart, Product } from './types';
+import { IconHeart } from '@tabler/icons-react';
 
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,6 +39,8 @@ function App() {
   useEffect(() => {
     setCost(calculateCost(cart));
   }, [cart]);
+
+  const [orderLoading, setOrderLoading] = useState(false);
 
   useEffect(() => {
     console.log(window.Telegram.WebApp.initData);
@@ -56,6 +60,7 @@ function App() {
   }, []);
 
   const createOrder = async () => {
+    setOrderLoading(true);
     await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -65,6 +70,7 @@ function App() {
     const data = await res.json();
     setOrders(data.orders);
     setCart({});
+    setOrderLoading(false);
   };
 
   return (
@@ -138,7 +144,7 @@ function App() {
                             },
                           };
                         });
-                        WebApp.HapticFeedback.notificationOccurred('success');
+                        WebApp.HapticFeedback.selectionChanged();
                       }}
                     >
                       {cart[product.id] ? cart[product.id].quantity : 'Add'}
@@ -157,13 +163,28 @@ function App() {
           </Stepper.Step>
           <Stepper.Completed>
             <Stack pl={'sm'} pr={'sm'}>
-              <Button>
-                <Loader color={'rgba(194, 232, 255, 0.48)'} size={'sm'} />
-              </Button>
-              <List>
+              {orderLoading ? (
+                <Button>
+                  <Loader color={'rgba(194, 232, 255, 0.48)'} size={'sm'} />
+                </Button>
+              ) : (
+                <Alert
+                  title={'Thank you!'}
+                  styles={{ message: { color: 'var(--tg-theme-text-color)' } }}
+                  icon={<IconHeart />}
+                >
+                  Order created successfully
+                </Alert>
+              )}
+              <List withPadding>
                 {orders.map((order) => (
                   <ListItem key={order.id}>
-                    {JSON.stringify(order.cart)}
+                    {JSON.stringify(
+                      Object.values(order.cart).map(
+                        (item) => `${item.product.id} x ${item.quantity}`
+                      )
+                    )}{' '}
+                    ${calculateCost(order.cart)}
                   </ListItem>
                 ))}
               </List>

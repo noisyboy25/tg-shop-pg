@@ -37,7 +37,7 @@ const generateProducts = async () => {
     productList.push({
       id: String(image.image_id),
       name: image.tags[0].name,
-      price: image.image_id,
+      price: image.image_id * 1234,
       image: image.url,
     });
   }
