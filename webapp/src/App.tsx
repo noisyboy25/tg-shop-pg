@@ -19,22 +19,33 @@ import {
   Stepper,
   Text,
 } from '@mantine/core';
+import OrderStep from './OrderStep';
+import { calculateCost } from './util';
+import { Cart, Product } from './types';
 
 function App() {
-  const [cost, setCost] = useState(0);
-  const [products, setProducts] = useState<
-    { id: string; name: string; price: number; image: string }[]
-  >([]);
+  const [products, setProducts] = useState<Product[]>([]);
+
   const [active, setActive] = useState(0);
   const nextStep = () =>
     setActive((current) => (current < 3 ? current + 1 : current));
 
-  const [orders, setOrders] = useState<{ id: number; cost: number }[]>([]);
+  const [orders, setOrders] = useState<{ id: number; cart: Cart }[]>([]);
+  const [cart, setCart] = useState<Cart>({});
+
+  const [cost, setCost] = useState(0);
+  useEffect(() => {
+    setCost(calculateCost(cart));
+  }, [cart]);
 
   useEffect(() => {
     console.log(window.Telegram.WebApp.initData);
     WebApp.ready();
   }, []);
+
+  useEffect(() => {
+    console.log(cart);
+  }, [cart]);
 
   useEffect(() => {
     (async () => {
@@ -48,11 +59,12 @@ function App() {
     await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ order: { cost } }),
+      body: JSON.stringify({ order: { cart } }),
     });
     const res = await fetch('/api/orders');
     const data = await res.json();
     setOrders(data.orders);
+    setCart({});
   };
 
   return (
@@ -116,10 +128,20 @@ function App() {
                     <Button
                       onClick={() => {
                         setCost((prev) => prev + product.price);
+                        setCart((prev) => {
+                          const prevQuantity = prev[product.id]?.quantity ?? 0;
+                          return {
+                            ...prev,
+                            [product.id]: {
+                              product: product,
+                              quantity: prevQuantity + 1,
+                            },
+                          };
+                        });
                         WebApp.HapticFeedback.notificationOccurred('success');
                       }}
                     >
-                      Add
+                      {cart[product.id] ? cart[product.id].quantity : 'Add'}
                     </Button>
                   </Card>
                 ))}
@@ -127,23 +149,11 @@ function App() {
             </ScrollArea>
           </Stepper.Step>
           <Stepper.Step label={'Order'} description={'Select payment method'}>
-            <Stack pl={'sm'} pr={'sm'}>
-              <Button
-                onClick={() => {
-                  createOrder();
-                  nextStep();
-                }}
-              >
-                <div>
-                  Pay{' '}
-                  <NumberFormatter
-                    prefix={'$'}
-                    value={cost}
-                    thousandSeparator
-                  />
-                </div>
-              </Button>
-            </Stack>
+            <OrderStep
+              cart={cart}
+              createOrder={createOrder}
+              nextStep={nextStep}
+            />
           </Stepper.Step>
           <Stepper.Completed>
             <Stack pl={'sm'} pr={'sm'}>
@@ -152,7 +162,9 @@ function App() {
               </Button>
               <List>
                 {orders.map((order) => (
-                  <ListItem key={order.id}>{order.cost}</ListItem>
+                  <ListItem key={order.id}>
+                    {JSON.stringify(order.cart)}
+                  </ListItem>
                 ))}
               </List>
             </Stack>

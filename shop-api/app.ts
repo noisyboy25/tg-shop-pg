@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import { Cart } from './types';
 
 const app = express();
 app.use(express.json());
@@ -49,17 +50,17 @@ products.get('/', (req, res) => {
   });
 });
 
-const orders: { id: number; cost: number }[] = [];
+const orders: { id: number; cart: Cart }[] = [];
 api
   .route('/orders')
   .get((req, res) => {
-    console.log(orders);
+    console.dir(orders);
     res.json({ orders });
   })
   .post((req, res) => {
     const { order } = req.body;
     order.id = orders.length;
-    console.log(order);
+    console.dir(order);
     orders.push(order);
     res.json({ message: 'created order', order });
   });
