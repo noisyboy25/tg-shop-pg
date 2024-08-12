@@ -65,6 +65,7 @@ function App() {
     });
     setCart({});
     setOrderLoading(false);
+    WebApp.HapticFeedback.notificationOccurred('success');
   };
 
   return (
@@ -127,7 +128,6 @@ function App() {
                     </Text>
                     <Button
                       onClick={() => {
-                        setCost((prev) => prev + product.price);
                         setCart((prev) => {
                           const prevQuantity = prev[product.id]?.quantity ?? 0;
                           return {
@@ -138,7 +138,6 @@ function App() {
                             },
                           };
                         });
-                        WebApp.HapticFeedback.selectionChanged();
                       }}
                     >
                       {cart[product.id] ? cart[product.id].quantity : 'Add'}
