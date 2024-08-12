@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 
 const app = express();
+app.use(express.json());
 
 const api = express.Router();
 app.use('/api', api);
@@ -48,7 +49,20 @@ products.get('/', (req, res) => {
   });
 });
 
-products.get('/image', async (req, res) => {});
+const orders: { id: number; cost: number }[] = [];
+api
+  .route('/orders')
+  .get((req, res) => {
+    console.log(orders);
+    res.json({ orders });
+  })
+  .post((req, res) => {
+    const { order } = req.body;
+    order.id = orders.length;
+    console.log(order);
+    orders.push(order);
+    res.json({ message: 'created order', order });
+  });
 
 const PORT = process.env.PORT ?? 5000;
 app.listen(PORT, () => console.log(`API listening on port ${PORT}`));

@@ -7,6 +7,8 @@ import {
   Card,
   Center,
   Image,
+  List,
+  ListItem,
   Loader,
   MantineProvider,
   NumberFormatter,
@@ -27,6 +29,8 @@ function App() {
   const nextStep = () =>
     setActive((current) => (current < 3 ? current + 1 : current));
 
+  const [orders, setOrders] = useState<{ id: number; cost: number }[]>([]);
+
   useEffect(() => {
     console.log(window.Telegram.WebApp.initData);
     WebApp.ready();
@@ -39,6 +43,17 @@ function App() {
       setProducts(products);
     })();
   }, []);
+
+  const createOrder = async () => {
+    await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order: { cost } }),
+    });
+    const res = await fetch('/api/orders');
+    const data = await res.json();
+    setOrders(data.orders);
+  };
 
   return (
     <MantineProvider>
@@ -113,7 +128,12 @@ function App() {
           </Stepper.Step>
           <Stepper.Step label={'Order'} description={'Select payment method'}>
             <Stack pl={'sm'} pr={'sm'}>
-              <Button onClick={() => nextStep()}>
+              <Button
+                onClick={() => {
+                  createOrder();
+                  nextStep();
+                }}
+              >
                 <div>
                   Pay{' '}
                   <NumberFormatter
@@ -130,6 +150,11 @@ function App() {
               <Button>
                 <Loader color={'rgba(194, 232, 255, 0.48)'} size={'sm'} />
               </Button>
+              <List>
+                {orders.map((order) => (
+                  <ListItem key={order.id}>{order.cost}</ListItem>
+                ))}
+              </List>
             </Stack>
           </Stepper.Completed>
         </Stepper>
