@@ -7,10 +7,8 @@
   "license": "ISC",
   "scripts": {
     "webapp": "pnpm --filter webapp",
-    "api": "pnpm --filter api",
     "bot": "pnpm --filter bot",
     "dev-webapp": "pnpm webapp dev",
-    "dev-api": "pnpm api dev",
     "dev-bot": "pnpm bot dev",
     "dev": "concurrently pnpm:dev-*"
   },

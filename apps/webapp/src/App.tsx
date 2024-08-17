@@ -9,6 +9,7 @@ import {
   Box,
   Button,
   Card,
+  Container,
   Image,
   Loader,
   MantineProvider,
@@ -16,12 +17,14 @@ import {
   SimpleGrid,
   Stack,
   Text,
+  TextInput,
 } from '@mantine/core';
 import OrderStep from './OrderStep';
 import { calculateCost } from './util';
 import { Cart, Product } from './types';
 import { IconHeart } from '@tabler/icons-react';
 import AddButton from './AddButton';
+import { useForm } from '@mantine/form';
 
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -79,16 +82,20 @@ function App() {
     await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ order: { cart: filteredCart } }),
+      body: JSON.stringify({
+        order: { cart: filteredCart, customer: form.getValues() },
+      }),
     });
     setCart({});
     setOrderLoading(false);
     WebApp.HapticFeedback.notificationOccurred('success');
   };
 
+  const form = useForm();
+
   return (
     <MantineProvider>
-      <AppShell withBorder={false} footer={{ height: 52 }}>
+      <AppShell withBorder={false} footer={{ height: cost > 0 ? 86 : 0 }}>
         <AppShell.Main>
           {active === 0 && (
             <SimpleGrid
@@ -141,6 +148,36 @@ function App() {
             />
           )}
           {active === 2 && (
+            <Container>
+              <form>
+                <TextInput
+                  withAsterisk
+                  label="Name"
+                  key={form.key('name')}
+                  {...form.getInputProps('name')}
+                  styles={{
+                    input: {
+                      background: WebApp.themeParams.secondary_bg_color,
+                      color: WebApp.themeParams.text_color,
+                    },
+                  }}
+                />
+                <TextInput
+                  withAsterisk
+                  label="Phone number"
+                  key={form.key('phone')}
+                  {...form.getInputProps('phone')}
+                  styles={{
+                    input: {
+                      background: WebApp.themeParams.secondary_bg_color,
+                      color: WebApp.themeParams.text_color,
+                    },
+                  }}
+                />
+              </form>
+            </Container>
+          )}
+          {active === 3 && (
             <Stack pl={'sm'} pr={'sm'}>
               {!orderLoading && (
                 <Alert
@@ -156,10 +193,10 @@ function App() {
             </Stack>
           )}
         </AppShell.Main>
-        <AppShell.Footer p={'sm'} ref={footer}>
+        <AppShell.Footer ref={footer}>
           <Stack>
-            {active === 0 && (
-              <Button onClick={() => nextStep()} disabled={cost <= 0}>
+            {(active === 0 || active === 1) && cost > 0 && (
+              <Button size="xl" onClick={() => nextStep()} disabled={cost <= 0}>
                 <Box>
                   Continue{' '}
                   <NumberFormatter
@@ -170,8 +207,9 @@ function App() {
                 </Box>
               </Button>
             )}
-            {active === 1 && (
+            {active === 2 && (
               <Button
+                size="xl"
                 onClick={() => {
                   createOrder();
                   nextStep();
@@ -188,8 +226,8 @@ function App() {
                 </Box>
               </Button>
             )}
-            {active === 2 && orderLoading && (
-              <Button>
+            {active === 3 && orderLoading && (
+              <Button size="xl">
                 <Loader color={'rgba(194, 232, 255, 0.48)'} size={'sm'} />
               </Button>
             )}
