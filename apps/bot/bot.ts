@@ -9,9 +9,13 @@ if (!TELEGRAM_TOKEN) {
 
 const bot = new Bot(TELEGRAM_TOKEN);
 
+bot.catch((err) => {
+  console.log({ err });
+});
+
 bot.command('start', async (ctx) => {
   const botUsername = (await ctx.api.getMe()).username;
-  ctx.reply('Open App', {
+  await ctx.reply('Open App', {
     reply_markup: new InlineKeyboard().url(
       'Open App',
       `https://t.me/${botUsername}?startapp`
@@ -23,7 +27,7 @@ bot.command('orders', async (ctx) => {
   const res = await fetch(`${process.env.SHOP_URL}/api/orders`);
   if (!res.ok) return;
   const { orders } = await res.json();
-  ctx.reply(
+  await ctx.reply(
     orders
       .map((order: any) => {
         return JSON.stringify(order, null, 4).replace(
@@ -34,7 +38,5 @@ bot.command('orders', async (ctx) => {
       .join('\n')
   );
 });
-
-bot.catch((error) => console.error(error));
 
 bot.start();
