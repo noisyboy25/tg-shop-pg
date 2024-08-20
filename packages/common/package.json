@@ -1,0 +1,12 @@
+{
+  "name": "@tg-shop-pg/common",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "main": "index.ts",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}

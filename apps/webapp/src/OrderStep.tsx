@@ -13,7 +13,6 @@ function OrderStep({
   cart,
 }: Readonly<{
   cart: Cart;
-  createOrder: () => void;
   nextStep: () => void;
 }>) {
   const [tableData, setTableData] = useState<TableData>();

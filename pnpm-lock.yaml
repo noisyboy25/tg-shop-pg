@@ -14,6 +14,9 @@ importers:
 
   apps/bot:
     dependencies:
+      '@tg-shop-pg/common':
+        specifier: workspace:^
+        version: link:../../packages/common
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
@@ -57,12 +60,18 @@ importers:
       '@tabler/icons-react':
         specifier: ^3.12.0
         version: 3.12.0(react@18.3.1)
+      '@tg-shop-pg/common':
+        specifier: workspace:^
+        version: link:../../packages/common
       react:
         specifier: ^18.3.1
         version: 18.3.1
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      react-imask:
+        specifier: ^7.6.1
+        version: 7.6.1(react@18.3.1)
     devDependencies:
       '@eslint/js':
         specifier: ^9.8.0
@@ -107,7 +116,17 @@ importers:
         specifier: ^5.4.0
         version: 5.4.0(@types/node@22.2.0)(sugarss@4.0.1(postcss@8.4.41))
 
+  packages/common:
+    devDependencies:
+      typescript:
+        specifier: ^5.5.4
+        version: 5.5.4
+
 packages:
+
+  '@babel/runtime-corejs3@7.25.0':
+    resolution: {integrity: sha512-BOehWE7MgQ8W8Qn0CQnMtg2tHPHPulcS/5AVpFvs2KCK1ET+0WqZqPvnpRpFN81gYoFopdIEJX9Sgjw3ZBccPg==}
+    engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.25.0':
     resolution: {integrity: sha512-7dRy4DwXwtzBrPbZflqxnvfxLF8kdZXPkhymtDeFoFqE6ldzjQFgYTtYIFARcLEYDrqfBfYcZt1WqFxRoyC9Rw==}
@@ -773,6 +792,9 @@ packages:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
     engines: {node: '>= 0.6'}
 
+  core-js-pure@3.38.1:
+    resolution: {integrity: sha512-BY8Etc1FZqdw1glX0XNOq2FDwfrg/VGqoZOZCdaL+UmdaqDwQwYXkMJT4t6In+zfEfOJDcM9T0KdbBeJg8KKCQ==}
+
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
 
@@ -1073,6 +1095,10 @@ packages:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
 
+  imask@7.6.1:
+    resolution: {integrity: sha512-sJlIFM7eathUEMChTh9Mrfw/IgiWgJqBKq2VNbyXvBZ7ev/IlO6/KQTKlV/Fm+viQMLrFLG/zCuudrLIwgK2dg==}
+    engines: {npm: '>=4.0.0'}
+
   import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
@@ -1368,6 +1394,12 @@ packages:
     resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
     peerDependencies:
       react: ^18.3.1
+
+  react-imask@7.6.1:
+    resolution: {integrity: sha512-vLNfzcCz62Yzx/GRGh5tiCph9Gbh2cZu+Tz8OiO5it2eNuuhpA0DWhhSlOtVtSJ80+Bx+vFK5De8eQ9AmbkXzA==}
+    engines: {npm: '>=4.0.0'}
+    peerDependencies:
+      react: '>=0.14.0'
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -1756,6 +1788,11 @@ packages:
     engines: {node: '>=10'}
 
 snapshots:
+
+  '@babel/runtime-corejs3@7.25.0':
+    dependencies:
+      core-js-pure: 3.38.1
+      regenerator-runtime: 0.14.1
 
   '@babel/runtime@7.25.0':
     dependencies:
@@ -2359,6 +2396,8 @@ snapshots:
 
   cookie@0.6.0: {}
 
+  core-js-pure@3.38.1: {}
+
   create-require@1.1.1: {}
 
   cross-spawn@7.0.3:
@@ -2705,6 +2744,10 @@ snapshots:
 
   ignore@5.3.2: {}
 
+  imask@7.6.1:
+    dependencies:
+      '@babel/runtime-corejs3': 7.25.0
+
   import-fresh@3.3.0:
     dependencies:
       parent-module: 1.0.1
@@ -2954,6 +2997,12 @@ snapshots:
       loose-envify: 1.4.0
       react: 18.3.1
       scheduler: 0.23.2
+
+  react-imask@7.6.1(react@18.3.1):
+    dependencies:
+      imask: 7.6.1
+      prop-types: 15.8.1
+      react: 18.3.1
 
   react-is@16.13.1: {}
 

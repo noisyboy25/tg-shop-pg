@@ -11,6 +11,7 @@ import {
   Card,
   Container,
   Image,
+  InputBase,
   Loader,
   MantineProvider,
   NumberFormatter,
@@ -21,10 +22,12 @@ import {
 } from '@mantine/core';
 import OrderStep from './OrderStep';
 import { calculateCost } from './util';
-import { Cart, Product } from './types';
+import { Cart } from './types';
 import { IconHeart } from '@tabler/icons-react';
 import AddButton from './AddButton';
 import { useForm } from '@mantine/form';
+import { IMaskInput } from 'react-imask';
+import { Order, Product } from '@tg-shop-pg/common';
 
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -70,7 +73,7 @@ function App() {
   useEffect(() => {
     console.log(active);
 
-    WebApp.BackButton.isVisible = active !== 0;
+    WebApp.BackButton.isVisible = active > 0 && active < 3;
   }, [active]);
 
   const footer = useRef<HTMLElement>(null);
@@ -79,11 +82,16 @@ function App() {
     if (cost <= 0) return;
     setOrderLoading(true);
     const filteredCart = Object.values(cart).filter(({ quantity }) => quantity);
+    const formattedOrder: Order = {
+      id: '',
+      cart: filteredCart,
+      customer: form.getTransformedValues(),
+    };
     await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        order: { cart: filteredCart, customer: form.getValues() },
+        order: formattedOrder,
       }),
     });
     setCart({});
@@ -91,7 +99,23 @@ function App() {
     WebApp.HapticFeedback.notificationOccurred('success');
   };
 
-  const form = useForm();
+  const form = useForm({
+    initialValues: { name: '', phone: '+7' },
+    validate: {
+      name: (value) =>
+        value.length > 2 && value.length <= 20 ? null : 'Invalid name',
+      phone: (value) =>
+        /^\+\d \(\d{3}\) \d{3}-\d{4}$/.test(value)
+          ? null
+          : 'Invalid phone number',
+    },
+    transformValues: (values) => ({
+      name: values.name.trim(),
+      phone: values.phone.trim().replace(/[^+\d]/g, ''),
+    }),
+  });
+
+  const submitRef = useRef<HTMLButtonElement>(null);
 
   return (
     <MantineProvider>
@@ -140,16 +164,15 @@ function App() {
               ))}
             </SimpleGrid>
           )}
-          {active === 1 && (
-            <OrderStep
-              cart={cart}
-              createOrder={createOrder}
-              nextStep={nextStep}
-            />
-          )}
+          {active === 1 && <OrderStep cart={cart} nextStep={nextStep} />}
           {active === 2 && (
             <Container>
-              <form>
+              <form
+                onSubmit={form.onSubmit(() => {
+                  createOrder();
+                  nextStep();
+                })}
+              >
                 <TextInput
                   withAsterisk
                   label="Name"
@@ -162,10 +185,11 @@ function App() {
                     },
                   }}
                 />
-                <TextInput
-                  withAsterisk
+                <InputBase
+                  component={IMaskInput}
                   label="Phone number"
                   key={form.key('phone')}
+                  mask={'+7 (000) 000-0000'}
                   {...form.getInputProps('phone')}
                   styles={{
                     input: {
@@ -173,7 +197,10 @@ function App() {
                       color: WebApp.themeParams.text_color,
                     },
                   }}
+                  withAsterisk
                 />
+
+                <button type="submit" ref={submitRef} hidden />
               </form>
             </Container>
           )}
@@ -211,13 +238,13 @@ function App() {
               <Button
                 size="xl"
                 onClick={() => {
-                  createOrder();
-                  nextStep();
+                  console.log(submitRef.current);
+                  submitRef.current?.click();
                 }}
                 disabled={cost <= 0}
               >
                 <Box>
-                  Pay{' '}
+                  Confirm{' '}
                   <NumberFormatter
                     prefix={'$'}
                     value={cost}

@@ -1,9 +1,5 @@
-export type Product = {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-};
+import { Product } from '@tg-shop-pg/common';
+
 export type Cart = {
   [key: string]: { product: Product; quantity: number };
 };

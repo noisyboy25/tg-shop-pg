@@ -6,8 +6,9 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "webapp": "pnpm --filter webapp",
-    "bot": "pnpm --filter bot",
+    "webapp": "pnpm --filter @tg-shop-pg/webapp",
+    "bot": "pnpm --filter @tg-shop-pg/bot",
+    "common": "pnpm --filter @tg-shop-pg/common",
     "dev-webapp": "pnpm webapp dev",
     "dev-bot": "pnpm bot dev",
     "dev": "concurrently pnpm:dev-*"

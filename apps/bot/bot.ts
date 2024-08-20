@@ -1,12 +1,19 @@
 import 'dotenv/config';
 import { Bot, InlineKeyboard } from 'grammy';
 import express from 'express';
+import { Order } from '@tg-shop-pg/common';
 
 const IMAGE_API = process.env.IMAGE_API;
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 if (!TELEGRAM_TOKEN) {
   console.error('TELEGRAM_TOKEN not specified in .env file');
+  process.exit(1);
+}
+
+const CHANNEL_ID = process.env.CHANNEL_ID;
+if (!CHANNEL_ID) {
+  console.error('CHANNEL_ID not specified in .env file');
   process.exit(1);
 }
 
@@ -24,22 +31,6 @@ bot.command('start', async (ctx) => {
       `https://t.me/${botUsername}?startapp`
     ),
   });
-});
-
-bot.command('orders', async (ctx) => {
-  const res = await fetch(`${process.env.SHOP_URL}/api/orders`);
-  if (!res.ok) return;
-  const { orders } = await res.json();
-  await ctx.reply(
-    orders
-      .map((order: any) => {
-        return JSON.stringify(order, null, 4).replace(
-          /[, \n]*"image.*"[\n ]*/g,
-          ''
-        );
-      })
-      .join('\n')
-  );
 });
 
 bot.start();
@@ -73,18 +64,22 @@ const productList: {
   image: string;
 }[] = [];
 const generateProducts = async () => {
-  const images = await getImages();
-  images
-    .filter((image: any) => image.tags.length > 0)
-    .map((image: any) => {
-      const tagIndex = Math.floor(Math.random() * image.tags.length);
-      productList.push({
-        id: String(image.id),
-        name: image.tags[tagIndex].name,
-        price: Math.floor(Math.random() * 1000),
-        image: image.sample_url,
+  try {
+    const images = await getImages();
+    images
+      .filter((image: any) => image.tags.length > 0)
+      .map((image: any) => {
+        const tagIndex = Math.floor(Math.random() * image.tags.length);
+        productList.push({
+          id: String(image.id),
+          name: image.tags[tagIndex].name,
+          price: Math.floor(Math.random() * 1000),
+          image: image.sample_url,
+        });
       });
-    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 generateProducts();
 
@@ -95,12 +90,22 @@ productApi.get('/', (req, res) => {
 });
 
 api.route('/orders').post(async (req, res) => {
-  const { order } = req.body;
-  order.id = Date.now();
+  const order: Order = req.body.order;
+  order.id = `${Date.now()}`;
+  const { id } = order;
   console.dir(order, { depth: null });
   res.json({ message: 'created order', order });
+  const formattedCart = order.cart
+    .map(
+      ({ product, quantity }) =>
+        `[${product.id}] (x ${quantity}) ${product.name}  `
+    )
+    .join('\n');
+  const formattedOrder = `<b>ID:</b> ${id}<b>\n<b>Phone:</b> ${order.customer.phone}\n<b>Name:</b> ${order.customer.name}\nCart:</b>\n${formattedCart}`;
   try {
-    await bot.api.sendMessage(-1002169127017, JSON.stringify(order, null, 4));
+    await bot.api.sendMessage(CHANNEL_ID, formattedOrder, {
+      parse_mode: 'HTML',
+    });
   } catch (error) {
     console.error(error);
   }

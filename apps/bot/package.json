@@ -1,5 +1,5 @@
 {
-  "name": "bot",
+  "name": "@tg-shop-pg/bot",
   "version": "1.0.0",
   "description": "",
   "main": "bot.ts",
@@ -20,6 +20,7 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "grammy": "^1.28.0"
+    "grammy": "^1.28.0",
+    "@tg-shop-pg/common": "workspace:^"
   }
 }
