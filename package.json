@@ -2,6 +2,7 @@
   "name": "tg-shop-pg",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -11,7 +12,8 @@
     "common": "pnpm --filter @tg-shop-pg/common",
     "dev-webapp": "pnpm webapp dev",
     "dev-bot": "pnpm bot dev",
-    "dev": "concurrently pnpm:dev-*"
+    "dev": "concurrently pnpm:dev-*",
+    "configure": "node ./configure.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
