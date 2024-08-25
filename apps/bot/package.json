@@ -12,15 +12,17 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^4.17.21",
-    "@types/node": "^22.2.0",
+    "@types/node": "^22.5.0",
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "dotenv": "^16.4.5",
+    "@dotenvx/dotenvx": "^1.10.1",
+    "@grammyjs/conversations": "^1.2.0",
+    "@grammyjs/menu": "^1.2.2",
+    "@tg-shop-pg/common": "workspace:^",
     "express": "^4.19.2",
-    "grammy": "^1.28.0",
-    "@tg-shop-pg/common": "workspace:^"
+    "grammy": "^1.29.0"
   }
 }
