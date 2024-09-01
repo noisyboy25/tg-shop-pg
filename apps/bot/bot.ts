@@ -211,7 +211,7 @@ const addProduct = async (name: string, price = 1, image = '') => {
     price,
     image,
   };
-  productList.push(product);
+  productList.unshift(product);
 };
 
 const PORT = process.env.PORT ?? 5000;
