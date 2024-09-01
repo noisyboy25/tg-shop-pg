@@ -186,12 +186,14 @@ api.route('/orders').post(async (req, res) => {
     })
     .join('\n\n');
 
-  const formattedOrder = `<b>ID:</b> ${order.id}
-<b>Phone:</b> ${order.customer.phone}
+  const formattedOrder = `<b>Cart:</b>
+${formattedCart}
+
+<b>ID:</b> ${order.id}
 <b>Name:</b> ${order.customer.name}
+<b>Phone:</b> ${order.customer.phone}
 <b>Cost:</b> $${calculateCost(order.cart)}
-<b>Cart:</b>
-${formattedCart}`;
+`;
 
   try {
     await bot.api.sendMessage(CHANNEL_ID, formattedOrder, {
