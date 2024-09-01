@@ -1,7 +1,8 @@
 import { Button, Group } from '@mantine/core';
 import React from 'react';
-import { CartView, Product } from './types';
+import { CartView } from './types';
 import { IconMinus, IconPlus } from '@tabler/icons-react';
+import { Product } from '@tg-shop-pg/common';
 
 function AddButton({
   product,

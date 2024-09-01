@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WebApp } from '@grammyjs/web-app';
 import '@mantine/core/styles.css';
-import './tg.module.css';
+import './assets/tg.css';
 import {
   Alert,
   AppShell,
