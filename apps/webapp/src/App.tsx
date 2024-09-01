@@ -198,6 +198,7 @@ function App() {
                     },
                   }}
                   withAsterisk
+                  inputMode="tel"
                 />
 
                 <button type="submit" ref={submitRef} hidden />
