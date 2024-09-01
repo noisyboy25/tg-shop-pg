@@ -4,12 +4,13 @@ export type Product = {
   price: number;
   image: string;
 };
+export type CartItem = {
+  product: Product;
+  quantity: number;
+};
 export type Order = {
   id: string;
-  cart: {
-    product: Product;
-    quantity: number;
-  }[];
+  cart: CartItem[];
   customer: {
     name: string;
     phone: string;

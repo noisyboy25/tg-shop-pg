@@ -22,7 +22,7 @@ import {
 } from '@mantine/core';
 import OrderStep from './OrderStep';
 import { calculateCost } from './util';
-import { Cart } from './types';
+import { CartView } from './types';
 import { IconHeart } from '@tabler/icons-react';
 import AddButton from './AddButton';
 import { useForm } from '@mantine/form';
@@ -40,7 +40,7 @@ function App() {
     [setActive]
   );
 
-  const [cart, setCart] = useState<Cart>({});
+  const [cart, setCart] = useState<CartView>({});
 
   const [cost, setCost] = useState(0);
   useEffect(() => {

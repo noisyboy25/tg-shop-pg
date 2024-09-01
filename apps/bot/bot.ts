@@ -10,6 +10,9 @@ import {
   ConversationFlavor,
   conversations,
 } from '@grammyjs/conversations';
+import fs from 'fs';
+import path from 'path';
+import { calculateCost } from '@tg-shop-pg/common/util';
 
 const IMAGE_API = process.env.IMAGE_API;
 
@@ -26,6 +29,9 @@ if (!CHANNEL_ID) {
   console.error('CHANNEL_ID not specified in .env file');
   process.exit(1);
 }
+
+const IMAGES_DIR_NAME = 'product-images';
+const IMAGES_DIR = path.resolve(`../webapp/public/${IMAGES_DIR_NAME}`);
 
 const productList: Product[] = [];
 
@@ -81,10 +87,37 @@ const productForm = async (
   ctx: MyContext
 ) => {
   await ctx.reply('Product name:');
-  const { message } = await conversation.wait();
-  if (!message?.text) return;
-  await addProduct(message.text);
-  await ctx.reply(`Product name is ${message.text}`);
+  const name = await conversation.form.text();
+  await ctx.reply('Product price:');
+  const price = await conversation.form.number();
+  await ctx.reply('Product image:');
+  const { file_path: imagePath, file_unique_id: imageId } = await (
+    await conversation.waitFor('message:media')
+  ).getFile();
+  console.log(imagePath);
+  if (!imagePath) return;
+  const res = await fetch(
+    `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${imagePath}`
+  );
+  if (!res.ok) return;
+  const imageName = `${imageId}.jpg`;
+  const imageFilePath = path.resolve(IMAGES_DIR, imageName);
+  try {
+    if (!fs.existsSync(IMAGES_DIR))
+      await fs.promises.mkdir(IMAGES_DIR, { recursive: true });
+    const fileStream = fs.createWriteStream(imageFilePath);
+    const stream = new WritableStream<Uint8Array>({
+      write(chunk) {
+        fileStream.write(chunk);
+      },
+    });
+    if (!res.body) return;
+    await res.body.pipeTo(stream);
+  } catch (error) {
+    console.log(error);
+  }
+  await addProduct(name, price, `/${IMAGES_DIR_NAME}/${imageName}`);
+  await ctx.reply(`Product added: ${name}`);
 };
 bot.use(createConversation(productForm));
 
@@ -143,13 +176,23 @@ api.route('/orders').post(async (req, res) => {
   order.id = `${Date.now()}`;
   console.dir(order, { depth: null });
   res.json({ message: 'created order', order });
+
   const formattedCart = order.cart
-    .map(
-      ({ product, quantity }) =>
-        `[${product.id}] (x ${quantity}) ${product.name}  `
-    )
-    .join('\n');
-  const formattedOrder = `<b>ID:</b> ${order.id}<b>\n<b>Phone:</b> ${order.customer.phone}\n<b>Name:</b> ${order.customer.name}\nCart:</b>\n${formattedCart}`;
+    .map(({ product, quantity }) => {
+      const { id, name, price } = product;
+      return `[${id}]  ${name}\n($${price} x ${quantity} = $${
+        price * quantity
+      })`;
+    })
+    .join('\n\n');
+
+  const formattedOrder = `<b>ID:</b> ${order.id}
+<b>Phone:</b> ${order.customer.phone}
+<b>Name:</b> ${order.customer.name}
+<b>Cost:</b> $${calculateCost(order.cart)}
+<b>Cart:</b>
+${formattedCart}`;
+
   try {
     await bot.api.sendMessage(CHANNEL_ID, formattedOrder, {
       parse_mode: 'HTML',

@@ -1,5 +1,5 @@
 import { Product } from '@tg-shop-pg/common';
 
-export type Cart = {
+export type CartView = {
   [key: string]: { product: Product; quantity: number };
 };

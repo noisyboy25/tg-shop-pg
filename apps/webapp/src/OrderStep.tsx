@@ -6,13 +6,13 @@ import {
   TableData,
   Badge,
 } from '@mantine/core';
-import { Cart } from './types';
+import { CartView } from './types';
 import { useEffect, useState } from 'react';
 
 function OrderStep({
   cart,
 }: Readonly<{
-  cart: Cart;
+  cart: CartView;
   nextStep: () => void;
 }>) {
   const [tableData, setTableData] = useState<TableData>();

@@ -1,6 +1,6 @@
 import { Button, Group } from '@mantine/core';
 import React from 'react';
-import { Cart, Product } from './types';
+import { CartView, Product } from './types';
 import { IconMinus, IconPlus } from '@tabler/icons-react';
 
 function AddButton({
@@ -9,8 +9,8 @@ function AddButton({
   setCart,
 }: Readonly<{
   product: Product;
-  cart: Cart;
-  setCart: React.Dispatch<React.SetStateAction<Cart>>;
+  cart: CartView;
+  setCart: React.Dispatch<React.SetStateAction<CartView>>;
 }>) {
   const productInc = () => {
     setCart((prev) => {
