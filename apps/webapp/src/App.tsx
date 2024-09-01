@@ -242,7 +242,7 @@ function App() {
                   console.log(submitRef.current);
                   submitRef.current?.click();
                 }}
-                disabled={cost <= 0}
+                disabled={cost <= 0 || !form.isValid()}
               >
                 <Box>
                   Confirm{' '}
