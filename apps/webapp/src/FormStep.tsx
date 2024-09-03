@@ -9,11 +9,13 @@ import { UseFormReturnType } from '@mantine/form';
 
 function FormStep({
   form,
+  submitRef,
 }: Readonly<{
   form: UseFormReturnType<
     UserFormValues,
     (values: UserFormValues) => UserFormValues
   >;
+  submitRef: React.RefObject<HTMLButtonElement>;
 }>) {
   const mainContext = useContext(MainContext);
 

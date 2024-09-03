@@ -51,6 +51,8 @@ function App() {
 
   const cost = useMemo(() => calculateCost(cart), [cart]);
 
+  const submitRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     (async () => {
       const res = await fetch('/api/products');
@@ -62,11 +64,19 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const handleContinue = () => {
+      if (step === 2 && submitRef.current) {
+        submitRef.current.click();
+        return;
+      }
+      nextStep();
+    };
+
     WebApp.BackButton.onClick(prevStep);
-    WebApp.MainButton.onClick(nextStep);
+    WebApp.MainButton.onClick(handleContinue);
     return () => {
       WebApp.BackButton.offClick(prevStep);
-      WebApp.MainButton.offClick(nextStep);
+      WebApp.MainButton.offClick(handleContinue);
     };
   }, [prevStep, nextStep, step]);
 
@@ -110,7 +120,7 @@ function App() {
       <MainContext.Provider value={mainContextValue}>
         {step === 0 && <CatalogueStep />}
         {step === 1 && <CartStep />}
-        {step === 2 && <FormStep form={form} />}
+        {step === 2 && <FormStep form={form} submitRef={submitRef} />}
         {step === 3 && (
           <Stack pl={'sm'} pr={'sm'}>
             <Alert
