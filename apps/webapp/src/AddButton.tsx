@@ -62,20 +62,26 @@ function AddButton({
         />
       </Grid.Col>
       <Grid.Col span={1}>
-        {cart[product.id]?.quantity ? (
-          <Group gap={'xs'} w={'100%'}>
-            <Button onClick={productDec} size={'sm'} p={'3'} flex={'1 1'}>
-              <IconMinus />
+        <Group gap={'xs'} w={'100%'}>
+          {cart[product.id]?.quantity ? (
+            <>
+              <Button onClick={productDec} size={'sm'} p={'3'} flex={'1 1'}>
+                <IconMinus />
+              </Button>
+              <Button onClick={productInc} size={'sm'} p={'3'} flex={'1 1'}>
+                <IconPlus />
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => productSetQuantity(product, 1)}
+              size="sm"
+              fullWidth
+            >
+              Add
             </Button>
-            <Button onClick={productInc} size={'sm'} p={'3'} flex={'1 1'}>
-              <IconPlus />
-            </Button>
-          </Group>
-        ) : (
-          <Button onClick={() => productSetQuantity(product, 1)} size="sm">
-            Add
-          </Button>
-        )}
+          )}
+        </Group>
       </Grid.Col>
     </Grid>
   );
