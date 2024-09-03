@@ -60,6 +60,10 @@ const productForm = async (
 ) => {
   await ctx.reply('Product name:');
   const name = await conversation.form.text();
+  await ctx.reply('Unit measure:');
+  const unit = await conversation.form.text();
+  await ctx.reply('Min package:');
+  const minPackage = await conversation.form.number();
   await ctx.reply('Product price:');
   const price = await conversation.form.number();
   await ctx.reply('Product image:');
@@ -69,7 +73,7 @@ const productForm = async (
   console.log(imagePath);
   if (!imagePath) return;
 
-  await addProduct(name, price, `/api/images/${imagePath}`);
+  await addProduct(name, price, `/api/images/${imagePath}`, minPackage, unit);
   await ctx.reply(`Product added: ${name}`);
 };
 bot.use(createConversation(productForm));
@@ -121,7 +125,7 @@ api.get('/images/photos/:imagePath', async (req, res) => {
   const { imagePath } = req.params;
   try {
     const imgRes = await axios.get(
-      `https://api.telegram.org/file/bot7202878894:AAHf6uEjZj6aVXOpDfv97xFJ9-kIKNTIAnA/photos/${imagePath}`,
+      `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/photos/${imagePath}`,
       { responseType: 'stream' }
     );
     imgRes.data.pipe(res);
@@ -147,10 +151,10 @@ api.route('/orders').post(async (req, res) => {
 
   const formattedCart = order.cart
     .map(({ product, quantity }) => {
-      const { id, name, price } = product;
-      return `[${id}]  ${name}\n($${price} x ${quantity} = $${
-        price * quantity
-      })`;
+      const { id, name, price, unit } = product;
+      const u = unit ? `${unit} ` : '';
+      return `[${id}]  ${name}
+($${price} x ${quantity} ${u}= $${price * quantity})`;
     })
     .join('\n\n');
 
@@ -172,11 +176,19 @@ ${formattedCart}
   }
 });
 
-const addProduct = async (name: string, price = 1, image = '') => {
+const addProduct = async (
+  name: string,
+  price = 1,
+  image = '',
+  minPackage = 1,
+  unit?: string
+) => {
   await db.insert(products).values({
     name,
     price,
     image,
+    minPackage,
+    unit,
   });
 };
 

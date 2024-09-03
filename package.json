@@ -15,6 +15,7 @@
     "dev": "concurrently pnpm:dev-*",
     "configure": "node ./configure.js",
     "build": "pnpm common build && pnpm webapp build && pnpm bot build",
+    "generate": "pnpm bot generate",
     "migrate": "pnpm bot migrate",
     "prestart": "pnpm migrate",
     "start": "pnpm bot start"

@@ -36,6 +36,9 @@ function CatalogueStep() {
               prefix={'$'}
               value={product.price}
               thousandSeparator
+              suffix={` (${product.minPackage}${
+                product.unit ? ' ' + product.unit : ''
+              })`}
             />
           </Box>
           <AddButton

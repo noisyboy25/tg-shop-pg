@@ -28,6 +28,9 @@ function CartStep() {
                 thousandSeparator
               />
             </Text>,
+            <Text key={'package'}>
+              {product.minPackage} {product.unit}
+            </Text>,
             <Badge key={'quantity'}>x {quantity}</Badge>,
             <Text key={'cost'}>
               <NumberFormatter
@@ -38,6 +41,7 @@ function CartStep() {
             </Text>,
           ]),
         [
+          '',
           '',
           '',
           '',

@@ -37,6 +37,8 @@ function App() {
       const res = await fetch('/api/products');
       const { products } = await res.json();
       setProducts(products);
+      console.log(products);
+
       console.log(window.Telegram.WebApp.initData);
       WebApp.ready();
     })();
@@ -44,10 +46,7 @@ function App() {
 
   useEffect(() => {
     const handleContinue = () => {
-      if (step === 2 && submitRef.current) {
-        submitRef.current.click();
-        return;
-      }
+      if (step === 2 && submitRef.current) return submitRef.current.click();
       nextStep();
     };
 
