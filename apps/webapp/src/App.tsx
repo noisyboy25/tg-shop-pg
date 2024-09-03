@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { WebApp } from '@grammyjs/web-app';
 import '@mantine/core/styles.css';
 import './assets/tg.css';
@@ -17,22 +11,7 @@ import { Product } from '@tg-shop-pg/common';
 import CatalogueStep from './CatalogueStep';
 import FormStep from './FormStep';
 import { useForm } from '@mantine/form';
-
-export const MainContext = createContext<{
-  cart: CartView;
-  setCart: React.Dispatch<React.SetStateAction<CartView>>;
-  products: Product[];
-  cost: number;
-  step: number;
-  nextStep: () => void;
-}>({
-  cart: {},
-  setCart: () => {},
-  products: [],
-  cost: 0,
-  step: 0,
-  nextStep: () => {},
-});
+import { MainContext } from './mainContext';
 
 function App() {
   const [products, setProducts] = useState<Product[]>([]);

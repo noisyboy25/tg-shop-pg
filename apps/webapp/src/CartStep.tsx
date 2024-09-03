@@ -7,7 +7,7 @@ import {
   Badge,
 } from '@mantine/core';
 import { useContext, useEffect, useState } from 'react';
-import { MainContext } from './App';
+import { MainContext } from './mainContext';
 
 function CartStep() {
   const mainContext = useContext(MainContext);

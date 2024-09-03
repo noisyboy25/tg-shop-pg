@@ -1,11 +1,11 @@
 import { WebApp } from '@grammyjs/web-app';
 import { Container, TextInput, InputBase } from '@mantine/core';
-import { useContext, useRef } from 'react';
+import { useContext } from 'react';
 import { IMaskInput } from 'react-imask';
-import { MainContext } from './App';
 import { Order } from '@tg-shop-pg/common';
 import { UserFormValues } from './types';
 import { UseFormReturnType } from '@mantine/form';
+import { MainContext } from './mainContext';
 
 function FormStep({
   form,
@@ -18,8 +18,6 @@ function FormStep({
   submitRef: React.RefObject<HTMLButtonElement>;
 }>) {
   const mainContext = useContext(MainContext);
-
-  const submitRef = useRef<HTMLButtonElement>(null);
 
   const createOrder = async () => {
     if (mainContext.cost <= 0) return;

@@ -8,7 +8,7 @@ import {
 } from '@mantine/core';
 import AddButton from './AddButton';
 import { useContext } from 'react';
-import { MainContext } from './App';
+import { MainContext } from './mainContext';
 
 function CatalogueStep() {
   const mainContext = useContext(MainContext);
