@@ -1,105 +1,81 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { WebApp } from '@grammyjs/web-app';
 import '@mantine/core/styles.css';
 import './assets/tg.css';
-import {
-  Alert,
-  AppShell,
-  Badge,
-  Box,
-  Button,
-  Card,
-  Container,
-  Image,
-  InputBase,
-  Loader,
-  MantineProvider,
-  NumberFormatter,
-  SimpleGrid,
-  Stack,
-  Text,
-  TextInput,
-} from '@mantine/core';
-import OrderStep from './OrderStep';
+import { Alert, MantineProvider, Stack } from '@mantine/core';
+import CartStep from './CartStep';
 import { calculateCost } from './util';
-import { CartView } from './types';
+import { CartView, UserFormValues } from './types';
 import { IconHeart } from '@tabler/icons-react';
-import AddButton from './AddButton';
+import { Product } from '@tg-shop-pg/common';
+import CatalogueStep from './CatalogueStep';
+import FormStep from './FormStep';
 import { useForm } from '@mantine/form';
-import { IMaskInput } from 'react-imask';
-import { Order, Product } from '@tg-shop-pg/common';
+
+export const MainContext = createContext<{
+  cart: CartView;
+  setCart: React.Dispatch<React.SetStateAction<CartView>>;
+  products: Product[];
+  cost: number;
+  step: number;
+  nextStep: () => void;
+}>({
+  cart: {},
+  setCart: () => {},
+  products: [],
+  cost: 0,
+  step: 0,
+  nextStep: () => {},
+});
 
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
 
-  const [active, setActive] = useState(0);
-  const nextStep = () =>
-    setActive((current) => (current < 3 ? current + 1 : current));
+  const [step, setStep] = useState(0);
+  const nextStep = useCallback(
+    () => setStep((current) => (current < 3 ? current + 1 : current)),
+    [setStep]
+  );
   const prevStep = useCallback(
-    () => setActive((current) => (current > 0 ? current - 1 : current)),
-    [setActive]
+    () => setStep((current) => (current > 0 ? current - 1 : current)),
+    [setStep]
   );
 
   const [cart, setCart] = useState<CartView>({});
 
-  const [cost, setCost] = useState(0);
-  useEffect(() => {
-    setCost(calculateCost(cart));
-  }, [cart]);
-
-  const [orderLoading, setOrderLoading] = useState(false);
+  const cost = useMemo(() => calculateCost(cart), [cart]);
 
   useEffect(() => {
     (async () => {
       const res = await fetch('/api/products');
       const { products } = await res.json();
       setProducts(products);
+      console.log(window.Telegram.WebApp.initData);
+      WebApp.ready();
     })();
-    console.log(window.Telegram.WebApp.initData);
-    WebApp.ready();
   }, []);
 
   useEffect(() => {
     WebApp.BackButton.onClick(prevStep);
+    WebApp.MainButton.onClick(nextStep);
     return () => {
       WebApp.BackButton.offClick(prevStep);
+      WebApp.MainButton.offClick(nextStep);
     };
-  }, [prevStep]);
+  }, [prevStep, nextStep, step]);
 
   useEffect(() => {
-    console.log(cart);
-  }, [cart]);
+    console.log(step);
+    WebApp.BackButton.isVisible = step > 0 && step < 3;
+  }, [step]);
 
-  useEffect(() => {
-    console.log(active);
-
-    WebApp.BackButton.isVisible = active > 0 && active < 3;
-  }, [active]);
-
-  const footer = useRef<HTMLElement>(null);
-
-  const createOrder = async () => {
-    if (cost <= 0) return;
-    setOrderLoading(true);
-    const filteredCart = Object.values(cart).filter(({ quantity }) => quantity);
-    const formattedOrder: Order = {
-      id: '',
-      cart: filteredCart,
-      customer: form.getTransformedValues(),
-    };
-    await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        order: formattedOrder,
-      }),
-    });
-    setCart({});
-    setOrderLoading(false);
-    WebApp.HapticFeedback.notificationOccurred('success');
-  };
-
-  const form = useForm({
+  const form = useForm<UserFormValues>({
     initialValues: { name: '', phone: '+7' },
     validate: {
       name: (value) =>
@@ -115,153 +91,40 @@ function App() {
     }),
   });
 
-  const submitRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    WebApp.MainButton.isVisible = step !== 2 ? cost > 0 : form.isValid();
+    WebApp.MainButton.setText(
+      `CONTINUE $${new Intl.NumberFormat('en-IN', { currency: 'USD' }).format(
+        cost
+      )}`
+    );
+  }, [cost, form, step]);
+
+  const mainContextValue = useMemo(
+    () => ({ cart, setCart, products, cost, step, nextStep }),
+    [cart, cost, nextStep, products, step]
+  );
 
   return (
     <MantineProvider>
-      <AppShell withBorder={false} footer={{ height: cost > 0 ? 86 : 0 }}>
-        <AppShell.Main>
-          {active === 0 && (
-            <SimpleGrid
-              mt={'md'}
-              p={'sm'}
-              cols={3}
-              style={{
-                backgroundColor: 'var(--tg-theme-secondary-bg-color)',
+      <MainContext.Provider value={mainContextValue}>
+        {step === 0 && <CatalogueStep />}
+        {step === 1 && <CartStep />}
+        {step === 2 && <FormStep form={form} />}
+        {step === 3 && (
+          <Stack pl={'sm'} pr={'sm'}>
+            <Alert
+              title={'Thank you!'}
+              styles={{
+                message: { color: 'var(--tg-theme-text-color)' },
               }}
+              icon={<IconHeart />}
             >
-              {products.map((product) => (
-                <Card
-                  key={product.id}
-                  p={'sm'}
-                  styles={{
-                    root: {
-                      backgroundColor: 'var(--tg-theme-section-bg-color)',
-                    },
-                  }}
-                >
-                  <Card.Section>
-                    {cart[product.id]?.quantity ? (
-                      <Badge pos={'absolute'} right={'0.5rem'} top={'0.5rem'}>
-                        {cart[product.id]?.quantity}
-                      </Badge>
-                    ) : null}
-                    <Image src={product.image} fit="cover" height={'140'} />
-                  </Card.Section>
-                  <Text mt={'xs'} fw={500}>
-                    {product.name}{' '}
-                  </Text>
-
-                  <Box mt={'auto'} mb={'xs'}>
-                    <NumberFormatter
-                      prefix={'$'}
-                      value={product.price}
-                      thousandSeparator
-                    />
-                  </Box>
-                  <AddButton product={product} cart={cart} setCart={setCart} />
-                </Card>
-              ))}
-            </SimpleGrid>
-          )}
-          {active === 1 && <OrderStep cart={cart} nextStep={nextStep} />}
-          {active === 2 && (
-            <Container>
-              <form
-                onSubmit={form.onSubmit(() => {
-                  createOrder();
-                  nextStep();
-                })}
-              >
-                <TextInput
-                  withAsterisk
-                  label="Name"
-                  key={form.key('name')}
-                  {...form.getInputProps('name')}
-                  styles={{
-                    input: {
-                      background: WebApp.themeParams.secondary_bg_color,
-                      color: WebApp.themeParams.text_color,
-                    },
-                  }}
-                />
-                <InputBase
-                  component={IMaskInput}
-                  label="Phone number"
-                  key={form.key('phone')}
-                  mask={'+7 (000) 000-0000'}
-                  {...form.getInputProps('phone')}
-                  styles={{
-                    input: {
-                      background: WebApp.themeParams.secondary_bg_color,
-                      color: WebApp.themeParams.text_color,
-                    },
-                  }}
-                  withAsterisk
-                  inputMode="tel"
-                />
-
-                <button type="submit" ref={submitRef} hidden />
-              </form>
-            </Container>
-          )}
-          {active === 3 && (
-            <Stack pl={'sm'} pr={'sm'}>
-              {!orderLoading && (
-                <Alert
-                  title={'Thank you!'}
-                  styles={{
-                    message: { color: 'var(--tg-theme-text-color)' },
-                  }}
-                  icon={<IconHeart />}
-                >
-                  Your order has been created successfully
-                </Alert>
-              )}
-            </Stack>
-          )}
-        </AppShell.Main>
-        <AppShell.Footer ref={footer}>
-          <Stack>
-            {(active === 0 || active === 1) && cost > 0 && (
-              <Button size="xl" onClick={() => nextStep()} disabled={cost <= 0}>
-                <Box>
-                  Continue{' '}
-                  <NumberFormatter
-                    prefix={'$'}
-                    value={cost}
-                    thousandSeparator
-                  />
-                </Box>
-              </Button>
-            )}
-            {active === 2 && (
-              <Button
-                size="xl"
-                onClick={() => {
-                  console.log(submitRef.current);
-                  submitRef.current?.click();
-                }}
-                disabled={cost <= 0 || !form.isValid()}
-              >
-                <Box>
-                  Confirm{' '}
-                  <NumberFormatter
-                    prefix={'$'}
-                    value={cost}
-                    thousandSeparator
-                  />
-                </Box>
-              </Button>
-            )}
-            {active === 3 && orderLoading && (
-              <Button size="xl">
-                <Loader color={'rgba(194, 232, 255, 0.48)'} size={'sm'} />
-              </Button>
-            )}
+              Your order has been created successfully
+            </Alert>
           </Stack>
-        </AppShell.Footer>
-      </AppShell>
+        )}
+      </MainContext.Provider>
     </MantineProvider>
   );
 }

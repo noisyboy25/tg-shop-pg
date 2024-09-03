@@ -1,8 +1,15 @@
-import { Button, Group } from '@mantine/core';
-import React from 'react';
+import {
+  Button,
+  Grid,
+  Group,
+  NumberInput,
+  NumberInputHandlers,
+} from '@mantine/core';
+import React, { useRef } from 'react';
 import { CartView } from './types';
 import { IconMinus, IconPlus } from '@tabler/icons-react';
 import { Product } from '@tg-shop-pg/common';
+import { WebApp } from '@grammyjs/web-app';
 
 function AddButton({
   product,
@@ -13,50 +20,64 @@ function AddButton({
   cart: CartView;
   setCart: React.Dispatch<React.SetStateAction<CartView>>;
 }>) {
+  const handlersRef = useRef<NumberInputHandlers>(null);
+
   const productInc = () => {
-    setCart((prev) => {
-      const prevQuantity = prev[product.id]?.quantity ?? 0;
-      return {
-        ...prev,
-        [product.id]: {
-          product: product,
-          quantity: prevQuantity + 1,
-        },
-      };
-    });
+    handlersRef.current?.increment();
   };
 
   const productDec = () => {
+    handlersRef.current?.decrement();
+  };
+
+  const productSetQuantity = (product: Product, quantity: number) => {
     setCart((prev) => {
-      const prevQuantity = prev[product.id]?.quantity ?? 0;
-      if (prevQuantity <= 0) return prev;
       return {
         ...prev,
         [product.id]: {
-          product: product,
-          quantity: prevQuantity > 0 ? prevQuantity - 1 : prevQuantity,
+          product,
+          quantity,
         },
       };
     });
   };
 
   return (
-    <>
-      {cart[product.id]?.quantity ? (
-        <Group gap={0} justify={'space-between'}>
-          <Button onClick={productDec} size={'compact-md'}>
-            <IconMinus width={'1rem'} />
+    <Grid gutter={'xs'} grow>
+      <Grid.Col span={1}>
+        <NumberInput
+          value={cart[product.id]?.quantity || 0}
+          disabled={!cart[product.id]?.quantity}
+          hideControls
+          styles={{
+            input: {
+              background: WebApp.themeParams.secondary_bg_color,
+              color: WebApp.themeParams.text_color,
+            },
+          }}
+          onChange={(value) => productSetQuantity(product, Number(value))}
+          handlersRef={handlersRef}
+          step={1}
+          defaultValue={1}
+        />
+      </Grid.Col>
+      <Grid.Col span={1}>
+        {cart[product.id]?.quantity ? (
+          <Group gap={'xs'} w={'100%'}>
+            <Button onClick={productDec} size={'sm'} p={'3'} flex={'1 1'}>
+              <IconMinus />
+            </Button>
+            <Button onClick={productInc} size={'sm'} p={'3'} flex={'1 1'}>
+              <IconPlus />
+            </Button>
+          </Group>
+        ) : (
+          <Button onClick={() => productSetQuantity(product, 1)} size="sm">
+            Add
           </Button>
-          <Button onClick={productInc} size={'compact-md'}>
-            <IconPlus width={'1rem'} />
-          </Button>
-        </Group>
-      ) : (
-        <Button onClick={productInc} size="compact-md">
-          Add
-        </Button>
-      )}
-    </>
+        )}
+      </Grid.Col>
+    </Grid>
   );
 }
 
