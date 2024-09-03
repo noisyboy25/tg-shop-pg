@@ -59,6 +59,7 @@ function AddButton({
           handlersRef={handlersRef}
           step={1}
           defaultValue={1}
+          min={0}
         />
       </Grid.Col>
       <Grid.Col span={1}>
