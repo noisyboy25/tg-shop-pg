@@ -11,8 +11,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
     "@types/express": "^4.17.21",
     "@types/node": "^22.5.0",
+    "drizzle-kit": "^0.24.2",
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
@@ -22,6 +24,9 @@
     "@grammyjs/conversations": "^1.2.0",
     "@grammyjs/menu": "^1.2.2",
     "@tg-shop-pg/common": "workspace:^",
+    "axios": "^1.7.7",
+    "better-sqlite3": "^11.2.1",
+    "drizzle-orm": "^0.33.0",
     "express": "^4.19.2",
     "grammy": "^1.29.0"
   }

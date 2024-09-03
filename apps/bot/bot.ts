@@ -10,11 +10,17 @@ import {
   ConversationFlavor,
   conversations,
 } from '@grammyjs/conversations';
-import fs from 'fs';
-import path from 'path';
 import { calculateCost } from '@tg-shop-pg/common/util';
-
-const IMAGE_API = process.env.IMAGE_API;
+import axios from 'axios';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import Database from 'better-sqlite3';
+import { products } from './db/schema';
+const sqlite = new Database('sqlite.db');
+const db = drizzle(sqlite);
+(async () => {
+  const result = await db.select().from(products);
+  console.log(result);
+})();
 
 let MINIAPP_URL = '';
 
@@ -29,40 +35,6 @@ if (!CHANNEL_ID) {
   console.error('CHANNEL_ID not specified in .env file');
   process.exit(1);
 }
-
-const IMAGES_DIR_NAME = 'product-images';
-const IMAGES_DIR = path.resolve(`../webapp/public/${IMAGES_DIR_NAME}`);
-
-const productList: Product[] = [];
-
-const getImages = async (limit = 15) => {
-  const res = await fetch(
-    `${IMAGE_API}/images/random?rating=safe&limit=${limit}`
-  );
-  const data = await res.json();
-  console.dir(data);
-  return data.items;
-};
-
-const generateProducts = async () => {
-  try {
-    const images = await getImages();
-    images
-      .filter((image: any) => image.tags.length > 0)
-      .map((image: any) => {
-        const tagIndex = Math.floor(Math.random() * image.tags.length);
-        productList.push({
-          id: String(image.id),
-          name: image.tags[tagIndex].name,
-          price: Math.floor(Math.random() * 1000),
-          image: image.sample_url,
-        });
-      });
-  } catch (error) {
-    console.log(error);
-  }
-};
-generateProducts();
 
 type MyContext = Context & ConversationFlavor;
 
@@ -91,32 +63,13 @@ const productForm = async (
   await ctx.reply('Product price:');
   const price = await conversation.form.number();
   await ctx.reply('Product image:');
-  const { file_path: imagePath, file_unique_id: imageId } = await (
+  const { file_path: imagePath } = await (
     await conversation.waitFor('message:media')
   ).getFile();
   console.log(imagePath);
   if (!imagePath) return;
-  const res = await fetch(
-    `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${imagePath}`
-  );
-  if (!res.ok) return;
-  const imageName = `${imageId}.jpg`;
-  const imageFilePath = path.resolve(IMAGES_DIR, imageName);
-  try {
-    if (!fs.existsSync(IMAGES_DIR))
-      await fs.promises.mkdir(IMAGES_DIR, { recursive: true });
-    const fileStream = fs.createWriteStream(imageFilePath);
-    const stream = new WritableStream<Uint8Array>({
-      write(chunk) {
-        fileStream.write(chunk);
-      },
-    });
-    if (!res.body) return;
-    await res.body.pipeTo(stream);
-  } catch (error) {
-    console.log(error);
-  }
-  await addProduct(name, price, `/${IMAGES_DIR_NAME}/${imageName}`);
+
+  await addProduct(name, price, `/api/images/${imagePath}`);
   await ctx.reply(`Product added: ${name}`);
 };
 bot.use(createConversation(productForm));
@@ -162,12 +115,25 @@ api.get('/', (req, res) => {
   res.json({ message: `Hello from API (${Date.now()})` });
 });
 
+api.get('/images/photos/:imagePath', async (req, res) => {
+  const { imagePath } = req.params;
+  try {
+    const imgRes = await axios.get(
+      `https://api.telegram.org/file/bot7202878894:AAHf6uEjZj6aVXOpDfv97xFJ9-kIKNTIAnA/photos/${imagePath}`,
+      { responseType: 'stream' }
+    );
+    imgRes.data.pipe(res);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 const productApi = express.Router();
 api.use('/products', productApi);
 
-productApi.get('/', (req, res) => {
+productApi.get('/', async (req, res) => {
   res.json({
-    products: productList,
+    products: await db.select().from(products),
   });
 });
 
@@ -205,13 +171,11 @@ ${formattedCart}
 });
 
 const addProduct = async (name: string, price = 1, image = '') => {
-  const product: Product = {
-    id: `${Date.now()}`,
+  await db.insert(products).values({
     name,
     price,
     image,
-  };
-  productList.unshift(product);
+  });
 };
 
 const PORT = process.env.PORT ?? 5000;
