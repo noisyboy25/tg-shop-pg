@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/bot.js",
-    "dev": "nodemon bot.ts"
+    "dev": "nodemon bot.ts",
+    "migrate": "drizzle-kit migrate"
   },
   "keywords": [],
   "author": "",

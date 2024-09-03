@@ -14,7 +14,10 @@
     "dev-bot": "pnpm bot dev",
     "dev": "concurrently pnpm:dev-*",
     "configure": "node ./configure.js",
-    "build": "pnpm common build && pnpm webapp build && pnpm bot build"
+    "build": "pnpm common build && pnpm webapp build && pnpm bot build",
+    "migrate": "pnpm bot migrate",
+    "prestart": "pnpm migrate",
+    "start": "pnpm bot start"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
