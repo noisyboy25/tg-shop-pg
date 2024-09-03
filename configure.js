@@ -17,9 +17,7 @@ if (!channelId) {
 
 fs.writeFileSync(
   CONFIG_PATH,
-  `SHOP_URL=http://localhost:5173
-PORT=5000
-IMAGE_API=https://api.nekosapi.com/v3
+  `PORT=5000
 TELEGRAM_TOKEN=${telegramToken}
 CHANNEL_ID=${channelId}
 `
