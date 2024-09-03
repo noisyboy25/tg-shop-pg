@@ -13,7 +13,8 @@
     "dev-webapp": "pnpm webapp dev",
     "dev-bot": "pnpm bot dev",
     "dev": "concurrently pnpm:dev-*",
-    "configure": "node ./configure.js"
+    "configure": "node ./configure.js",
+    "build": "pnpm common build && pnpm webapp build && pnpm bot build"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
