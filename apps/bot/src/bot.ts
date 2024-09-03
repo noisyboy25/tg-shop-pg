@@ -2,7 +2,7 @@ import dotenvx from '@dotenvx/dotenvx';
 dotenvx.config();
 import { Bot, Context, InlineKeyboard, session } from 'grammy';
 import express from 'express';
-import { Order, Product } from '@tg-shop-pg/common';
+import { calculateCost, Order } from '@tg-shop-pg/common';
 import { Menu } from '@grammyjs/menu';
 import {
   Conversation,
@@ -10,11 +10,11 @@ import {
   ConversationFlavor,
   conversations,
 } from '@grammyjs/conversations';
-import { calculateCost } from '@tg-shop-pg/common/util';
 import axios from 'axios';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import { products } from './db/schema';
+import path from 'path';
 const sqlite = new Database('sqlite.db');
 const db = drizzle(sqlite);
 (async () => {
@@ -107,6 +107,8 @@ bot.start({
 
 const app = express();
 app.use(express.json());
+
+app.use(express.static(path.resolve('../webapp/dist')));
 
 const api = express.Router();
 app.use('/api', api);

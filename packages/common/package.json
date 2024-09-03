@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "keywords": [],
-  "main": "index.ts",
+  "main": "dist/index.js",
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "typescript": "^5.5.4"
+  },
+  "scripts": {
+    "build": "tsc"
   }
 }
