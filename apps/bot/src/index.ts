@@ -1,8 +1,8 @@
 import dotenvx from '@dotenvx/dotenvx';
 dotenvx.config();
-import { Bot, Context, InlineKeyboard, session } from 'grammy';
+import { Bot, Context, InlineKeyboard, Keyboard, session } from 'grammy';
 import express from 'express';
-import { calculateCost, Order } from '@tg-shop-pg/common';
+import { Order } from '@tg-shop-pg/common';
 import { Menu } from '@grammyjs/menu';
 import {
   Conversation,
@@ -11,16 +11,9 @@ import {
   conversations,
 } from '@grammyjs/conversations';
 import axios from 'axios';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-import { products } from './db/schema';
 import path from 'path';
-const sqlite = new Database('sqlite.db');
-const db = drizzle(sqlite);
-(async () => {
-  const result = await db.select().from(products);
-  console.log(result);
-})();
+import { addProduct, findAllProducts } from './service';
+import { formatOrder } from './util';
 
 let MINIAPP_URL = '';
 
@@ -60,8 +53,17 @@ const productForm = async (
 ) => {
   await ctx.reply('Product name:');
   const name = await conversation.form.text();
-  await ctx.reply('Unit measure:');
-  const unit = await conversation.form.text();
+  const unitOptions = ['kg', 'g', 'pcs', 'liter', 'ml'];
+
+  await ctx.reply('Unit measure: ', {
+    reply_markup: Keyboard.from(unitOptions.map((u) => [Keyboard.text(u)]))
+      .oneTime()
+      .resized(),
+  });
+  const unit = await conversation.form.select(unitOptions, (ctx) => {
+    console.log(ctx.message);
+    ctx.reply('Skip');
+  });
   await ctx.reply('Min package:');
   const minPackage = await conversation.form.number();
   await ctx.reply('Product price:');
@@ -89,7 +91,10 @@ bot.use(adminMenu);
 
 bot.command('start', async (ctx) => {
   await ctx.reply('Open App', {
-    reply_markup: new InlineKeyboard().url('Open App', MINIAPP_URL),
+    reply_markup: {
+      inline_keyboard: new InlineKeyboard().url('Open App', MINIAPP_URL)
+        .inline_keyboard,
+    },
   });
 });
 
@@ -111,15 +116,10 @@ bot.start({
 
 const app = express();
 app.use(express.json());
-
 app.use(express.static(path.resolve('../webapp/dist')));
 
 const api = express.Router();
 app.use('/api', api);
-
-api.get('/', (req, res) => {
-  res.json({ message: `Hello from API (${Date.now()})` });
-});
 
 api.get('/images/photos/:imagePath', async (req, res) => {
   const { imagePath } = req.params;
@@ -139,7 +139,7 @@ api.use('/products', productApi);
 
 productApi.get('/', async (req, res) => {
   res.json({
-    products: await db.select().from(products),
+    products: await findAllProducts(),
   });
 });
 
@@ -149,23 +149,7 @@ api.route('/orders').post(async (req, res) => {
   console.dir(order, { depth: null });
   res.json({ message: 'created order', order });
 
-  const formattedCart = order.cart
-    .map(({ product, quantity }) => {
-      const { id, name, price, unit } = product;
-      const u = unit ? `${unit} ` : '';
-      return `[${id}]  ${name}
-($${price} x ${quantity} ${u}= $${price * quantity})`;
-    })
-    .join('\n\n');
-
-  const formattedOrder = `<b>Cart:</b>
-${formattedCart}
-
-<b>ID:</b> ${order.id}
-<b>Name:</b> ${order.customer.name}
-<b>Phone:</b> ${order.customer.phone}
-<b>Cost:</b> $${calculateCost(order.cart)}
-`;
+  const formattedOrder = formatOrder(order);
 
   try {
     await bot.api.sendMessage(CHANNEL_ID, formattedOrder, {
@@ -176,25 +160,9 @@ ${formattedCart}
   }
 });
 
-const addProduct = async (
-  name: string,
-  price = 1,
-  image = '',
-  minPackage = 1,
-  unit?: string
-) => {
-  await db.insert(products).values({
-    name,
-    price,
-    image,
-    minPackage,
-    unit,
-  });
-};
-
 const PORT = process.env.PORT ?? 5000;
 try {
-  app.listen(PORT, () => console.log(`API listening on port ${PORT}`));
+  app.listen(PORT, () => console.log(`API listening http://127.0.0.1:${PORT}`));
 } catch (error) {
   console.error(error);
 }
